@@ -1,52 +1,52 @@
 import type { Metadata } from "next";
-import { IBM_Plex_Mono, Space_Grotesk } from "next/font/google";
+import { Space_Grotesk } from "next/font/google";
+
 import "./globals.css";
-import type { ReactNode } from "react";
 
 const spaceGrotesk = Space_Grotesk({
   subsets: ["latin"],
-  variable: "--font-space-grotesk"
-});
-
-const ibmPlexMono = IBM_Plex_Mono({
-  subsets: ["latin"],
-  weight: ["400", "500", "600"],
-  variable: "--font-ibm-plex-mono"
+  display: "swap"
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://invoice-payment-predictor.app"),
   title: {
     default: "Invoice Payment Predictor",
     template: "%s | Invoice Payment Predictor"
   },
   description:
-    "Predict which invoices are likely to be paid late, prioritize collection actions, and protect cash flow before delays hurt your business.",
+    "Predict which invoices will be paid late using payment-pattern analysis, then take the right collection action before cash flow gets squeezed.",
+  keywords: [
+    "invoice payment predictor",
+    "late invoice prediction",
+    "accounts receivable analytics",
+    "cash flow forecasting",
+    "freelancer invoicing"
+  ],
   openGraph: {
     title: "Invoice Payment Predictor",
     description:
-      "Identify late-payment risk from real invoice history and act early with practical collection recommendations.",
-    type: "website",
-    url: "https://invoice-payment-predictor.app"
+      "Analyze client payment behavior, forecast delays, and prioritize collection action before invoices slip.",
+    url: "https://invoice-payment-predictor.app",
+    siteName: "Invoice Payment Predictor",
+    type: "website"
   },
   twitter: {
     card: "summary_large_image",
     title: "Invoice Payment Predictor",
     description:
-      "Predict late invoices, improve collection timing, and stabilize cash flow for freelancers and agencies."
+      "Predict late payments, protect cash flow, and collect smarter with a risk-first dashboard."
   },
-  metadataBase: new URL("https://invoice-payment-predictor.app")
+  robots: {
+    index: true,
+    follow: true
+  }
 };
 
-export default function RootLayout({
-  children
-}: Readonly<{
-  children: ReactNode;
-}>) {
+export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={`${spaceGrotesk.variable} ${ibmPlexMono.variable}`}>
-      <body className="min-h-screen bg-[#0d1117] text-slate-100 antialiased">
-        {children}
-      </body>
+    <html lang="en" className="dark">
+      <body className={`${spaceGrotesk.className} antialiased`}>{children}</body>
     </html>
   );
 }

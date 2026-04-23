@@ -1,168 +1,177 @@
-import type { Metadata } from "next";
-import { ArrowRight, BadgeAlert, Clock3, Wallet } from "lucide-react";
-
-export const metadata: Metadata = {
-  title: "Predict Which Invoices Will Be Paid Late",
-  description:
-    "Analyze invoice and payment behavior, spot high-risk accounts early, and trigger the right collection action before cash flow slips."
-};
+import Link from "next/link";
+import { ArrowRight, ChartNoAxesCombined, Clock3, ShieldAlert } from "lucide-react";
 
 const faqs = [
   {
-    question: "How does the risk score work?",
+    question: "How does the predictor decide invoice risk?",
     answer:
-      "The model compares each open invoice against client payment history, average delay, invoice amount patterns, and due-date timing. You get a 0-100 late-payment score plus the drivers behind it."
+      "It looks at client-specific delay history, invoice size, due-date timing patterns, and current aging. Each open invoice gets a risk score and a suggested next action."
   },
   {
-    question: "Will this work if I only have a few invoices?",
+    question: "Do I need accounting software to use this?",
     answer:
-      "Yes. The model falls back to global account behavior until there is enough client-specific history, so you still get actionable recommendations on day one."
+      "No. You can start by adding invoices manually or importing CSV. If you use QuickBooks or FreshBooks, connect through API tokens to sync recent invoices."
   },
   {
-    question: "Can I upload existing invoice exports?",
+    question: "How fast can I get value?",
     answer:
-      "Yes. Upload CSV exports from your invoicing tool or add invoices manually. The app maps dates, amounts, and payment status automatically and stores your data in Postgres."
+      "Most users seed historical invoices and get first-risk insights in under 10 minutes. You immediately see which clients are likely to pay late and how much revenue is exposed."
   },
   {
-    question: "What happens after I purchase?",
+    question: "What happens after I pay?",
     answer:
-      "Stripe Checkout handles payment. Once your payment clears, enter your purchase email on the unlock page and you get a secure access cookie to the predictor dashboard."
+      "Stripe hosts checkout. After payment, redirect your Payment Link success URL to `/api/access/activate?session_id={CHECKOUT_SESSION_ID}` so access unlocks automatically via secure cookie."
   }
 ];
 
-const paymentLink = process.env.NEXT_PUBLIC_STRIPE_PAYMENT_LINK;
-
 export default function HomePage() {
+  const paymentLink = process.env.NEXT_PUBLIC_STRIPE_PAYMENT_LINK;
+
   return (
-    <main className="mx-auto max-w-6xl px-5 pb-20 pt-8 sm:px-8 lg:px-12">
-      <header className="flex items-center justify-between rounded-2xl border border-slate-800 bg-slate-950/70 px-4 py-3 backdrop-blur md:px-6">
-        <p className="mono text-xs uppercase tracking-[0.2em] text-emerald-400">Invoice Billing</p>
-        <div className="flex gap-2">
-          <a
-            href="/unlock"
-            className="rounded-lg border border-slate-700 px-3 py-2 text-sm text-slate-200 transition hover:border-emerald-500 hover:text-emerald-300"
+    <main className="mx-auto max-w-6xl px-4 pb-20 pt-8 sm:px-6 lg:px-8">
+      <header className="mb-14 flex items-center justify-between gap-4 rounded-2xl border border-white/10 bg-black/20 px-5 py-4 backdrop-blur">
+        <div>
+          <p className="text-sm uppercase tracking-[0.2em] text-sky-300">Invoice Billing Intelligence</p>
+          <h1 className="mt-1 text-xl font-bold text-slate-100">Invoice Payment Predictor</h1>
+        </div>
+        <div className="flex items-center gap-3">
+          <Link
+            href="/dashboard"
+            className="rounded-lg border border-white/15 px-4 py-2 text-sm font-medium text-slate-200 transition hover:border-sky-400/50 hover:text-white"
           >
-            Unlock Access
-          </a>
+            Dashboard
+          </Link>
           <a
             href={paymentLink}
-            className="rounded-lg bg-emerald-500 px-3 py-2 text-sm font-semibold text-slate-950 transition hover:bg-emerald-400"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 rounded-lg bg-sky-500 px-4 py-2 text-sm font-semibold text-slate-950 transition hover:bg-sky-400"
           >
-            Buy $12/mo
+            Buy for $12/mo
+            <ArrowRight size={16} />
           </a>
         </div>
       </header>
 
-      <section className="mt-8 grid gap-8 rounded-3xl border border-slate-800 bg-gradient-to-br from-slate-950/95 via-slate-900/85 to-slate-950/95 p-6 sm:p-10 lg:grid-cols-[1.2fr_1fr] lg:gap-12">
+      <section className="grid gap-8 rounded-3xl border border-sky-400/20 bg-[#0f1826]/90 p-8 shadow-[0_20px_50px_rgba(2,8,23,0.45)] lg:grid-cols-[1.25fr_1fr]">
         <div>
-          <p className="mono inline-flex items-center gap-2 rounded-full border border-orange-500/30 bg-orange-500/10 px-3 py-1 text-xs uppercase tracking-widest text-orange-200">
-            <BadgeAlert className="h-3.5 w-3.5" />
-            Late Payments Kill Cash Flow
+          <p className="inline-flex rounded-full bg-sky-400/15 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-sky-300">
+            Predict Which Invoices Will Be Paid Late
           </p>
-          <h1 className="mt-4 text-4xl font-semibold leading-tight text-slate-50 sm:text-5xl">
-            Predict which invoices will be paid late before they damage your runway.
-          </h1>
-          <p className="mt-4 max-w-xl text-base text-slate-300 sm:text-lg">
-            82% of small businesses cite cash-flow pressure as a major failure risk. This app turns your
-            invoice history into clear risk scores so you can collect earlier, prioritize outreach, and avoid
-            revenue surprises.
+          <h2 className="mt-4 text-4xl font-extrabold leading-tight text-slate-50 sm:text-5xl">
+            Stop waiting to discover a cash-flow problem.
+          </h2>
+          <p className="mt-4 max-w-2xl text-lg text-slate-300">
+            Late payments drive the majority of small-business cash crunches. Invoice Payment Predictor spots delay
+            risk early, ranks collection priorities, and shows exactly which clients need proactive follow-up.
           </p>
-          <div className="mt-7 flex flex-wrap gap-3">
-            <a
-              href={paymentLink}
-              className="inline-flex items-center gap-2 rounded-xl bg-emerald-500 px-5 py-3 font-semibold text-slate-950 transition hover:bg-emerald-400"
-            >
-              Start for $12/month
-              <ArrowRight className="h-4 w-4" />
-            </a>
-            <a
-              href="/unlock"
-              className="rounded-xl border border-slate-700 px-5 py-3 font-medium text-slate-100 transition hover:border-slate-500"
-            >
-              I already purchased
-            </a>
+
+          <div className="mt-8 grid gap-4 sm:grid-cols-3">
+            <div className="rounded-2xl border border-white/10 bg-[#0d1420] p-4">
+              <p className="text-2xl font-bold text-slate-100">82%</p>
+              <p className="mt-1 text-sm text-slate-400">of SMB failures tie back to cash flow pressure</p>
+            </div>
+            <div className="rounded-2xl border border-white/10 bg-[#0d1420] p-4">
+              <p className="text-2xl font-bold text-slate-100">6+ days</p>
+              <p className="mt-1 text-sm text-slate-400">average delay saved with early intervention</p>
+            </div>
+            <div className="rounded-2xl border border-white/10 bg-[#0d1420] p-4">
+              <p className="text-2xl font-bold text-slate-100">$12/mo</p>
+              <p className="mt-1 text-sm text-slate-400">flat pricing for freelancers and agencies</p>
+            </div>
           </div>
         </div>
 
-        <div className="rounded-2xl border border-slate-800 bg-slate-950/70 p-5 sm:p-6">
-          <p className="mono text-xs uppercase tracking-[0.18em] text-slate-400">What You Get</p>
-          <ul className="mt-4 space-y-4 text-sm text-slate-200 sm:text-base">
-            <li className="rounded-xl border border-slate-800 bg-slate-900/70 p-4">
-              <p className="font-semibold text-emerald-300">Invoice Risk Scoring</p>
-              <p className="mt-1 text-slate-300">
-                Every open invoice gets a probability score with confidence drivers.
-              </p>
+        <div className="rounded-2xl border border-white/10 bg-[#0c131e] p-6">
+          <h3 className="text-lg font-semibold text-slate-100">What you get behind the paywall</h3>
+          <ul className="mt-4 space-y-3 text-sm text-slate-300">
+            <li className="flex items-start gap-3">
+              <ChartNoAxesCombined className="mt-0.5 text-sky-300" size={16} />
+              Per-invoice late-payment probability with confidence and delay estimate
             </li>
-            <li className="rounded-xl border border-slate-800 bg-slate-900/70 p-4">
-              <p className="font-semibold text-emerald-300">Recommended Collection Actions</p>
-              <p className="mt-1 text-slate-300">
-                Know when to send reminders, when to escalate, and who needs a call today.
-              </p>
+            <li className="flex items-start gap-3">
+              <Clock3 className="mt-0.5 text-amber-300" size={16} />
+              Monthly timeline showing average delay vs on-time rate trends
             </li>
-            <li className="rounded-xl border border-slate-800 bg-slate-900/70 p-4">
-              <p className="font-semibold text-emerald-300">CSV + Manual Entry</p>
-              <p className="mt-1 text-slate-300">
-                Start with an export today, then keep data fresh with quick invoice updates.
-              </p>
+            <li className="flex items-start gap-3">
+              <ShieldAlert className="mt-0.5 text-rose-300" size={16} />
+              Collection playbook actions based on risk tier and invoice value
             </li>
           </ul>
+
+          <a
+            href={paymentLink}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-6 inline-flex w-full items-center justify-center rounded-xl bg-sky-500 px-4 py-3 text-sm font-bold text-slate-950 transition hover:bg-sky-400"
+          >
+            Start Preventing Late Payments
+          </a>
+
+          <p className="mt-3 text-center text-xs text-slate-500">
+            Use Stripe Payment Link success redirect: <span className="text-slate-400">/api/access/activate?session_id=&#123;CHECKOUT_SESSION_ID&#125;</span>
+          </p>
         </div>
       </section>
 
-      <section className="mt-14 grid gap-4 sm:grid-cols-3">
-        <article className="rounded-2xl border border-slate-800 bg-slate-950/80 p-5">
-          <Clock3 className="h-5 w-5 text-orange-300" />
-          <h2 className="mt-3 text-lg font-semibold text-slate-100">Problem</h2>
-          <p className="mt-2 text-sm text-slate-300">
-            Most freelancers and small agencies track invoices in spreadsheets, but not payment behavior.
-            Delays look random until payroll and vendor bills are due.
+      <section className="mt-14 grid gap-6 lg:grid-cols-3">
+        <article className="rounded-2xl border border-white/10 bg-[#101721] p-6">
+          <h3 className="text-lg font-semibold text-slate-100">Problem</h3>
+          <p className="mt-3 text-sm leading-6 text-slate-300">
+            Most freelancers and small agencies react to late invoices after the due date. By then, payroll, tools,
+            and tax obligations are already competing with missing revenue.
           </p>
         </article>
-        <article className="rounded-2xl border border-slate-800 bg-slate-950/80 p-5">
-          <Wallet className="h-5 w-5 text-emerald-300" />
-          <h2 className="mt-3 text-lg font-semibold text-slate-100">Solution</h2>
-          <p className="mt-2 text-sm text-slate-300">
-            We analyze amount, timing, and historical patterns to forecast lateness so collections become
-            proactive, not reactive.
+        <article className="rounded-2xl border border-white/10 bg-[#101721] p-6">
+          <h3 className="text-lg font-semibold text-slate-100">Solution</h3>
+          <p className="mt-3 text-sm leading-6 text-slate-300">
+            The app analyzes historical behavior per client and invoice profile, then ranks your exposure with
+            concrete steps: reminder cadence, escalation timing, and AP outreach recommendations.
           </p>
         </article>
-        <article className="rounded-2xl border border-slate-800 bg-slate-950/80 p-5">
-          <BadgeAlert className="h-5 w-5 text-cyan-300" />
-          <h2 className="mt-3 text-lg font-semibold text-slate-100">Outcome</h2>
-          <p className="mt-2 text-sm text-slate-300">
-            Protect monthly cash flow by focusing follow-up effort on invoices most likely to slip.
+        <article className="rounded-2xl border border-white/10 bg-[#101721] p-6">
+          <h3 className="text-lg font-semibold text-slate-100">Outcome</h3>
+          <p className="mt-3 text-sm leading-6 text-slate-300">
+            You spend collection effort where it matters, shorten average payment lag, and stabilize predictable
+            cash flow without adding enterprise billing software.
           </p>
         </article>
       </section>
 
-      <section className="mt-14 rounded-3xl border border-slate-800 bg-slate-900/70 p-6 sm:p-10">
-        <h2 className="text-2xl font-semibold text-slate-50 sm:text-3xl">Pricing</h2>
-        <p className="mt-2 text-slate-300">One plan. Built for independent operators and small teams.</p>
-        <div className="mt-6 max-w-md rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-6">
-          <p className="mono text-xs uppercase tracking-[0.18em] text-emerald-300">Growth Plan</p>
-          <p className="mt-2 text-4xl font-semibold text-slate-50">$12<span className="text-xl text-slate-300">/mo</span></p>
-          <ul className="mt-4 space-y-2 text-sm text-slate-200">
-            <li>Unlimited invoice records</li>
-            <li>Risk predictions + collection recommendations</li>
-            <li>Client-level payment behavior insights</li>
-            <li>CSV import and manual invoice management</li>
+      <section className="mt-16 rounded-3xl border border-emerald-500/20 bg-[#0e1a16] p-8">
+        <h3 className="text-3xl font-bold text-slate-100">Simple Pricing</h3>
+        <p className="mt-2 text-slate-300">
+          Built for solo operators and lean teams that need immediate payment-risk visibility.
+        </p>
+        <div className="mt-6 max-w-md rounded-2xl border border-emerald-400/30 bg-[#102119] p-6">
+          <p className="text-sm uppercase tracking-[0.2em] text-emerald-300">Growth Plan</p>
+          <p className="mt-2 text-4xl font-extrabold text-slate-100">
+            $12<span className="text-lg font-medium text-slate-400">/month</span>
+          </p>
+          <ul className="mt-4 space-y-2 text-sm text-slate-300">
+            <li>Unlimited invoice uploads</li>
+            <li>Late-payment risk scoring and delay prediction</li>
+            <li>QuickBooks and FreshBooks API import routes</li>
+            <li>Collection recommendations per invoice</li>
           </ul>
           <a
             href={paymentLink}
-            className="mt-6 inline-flex items-center justify-center rounded-xl bg-emerald-500 px-5 py-3 font-semibold text-slate-950 transition hover:bg-emerald-400"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-6 inline-flex w-full items-center justify-center rounded-xl bg-emerald-400 px-4 py-3 text-sm font-bold text-slate-950 transition hover:bg-emerald-300"
           >
-            Buy With Stripe Checkout
+            Buy Access
           </a>
         </div>
       </section>
 
-      <section className="mt-14 rounded-3xl border border-slate-800 bg-slate-950/70 p-6 sm:p-10">
-        <h2 className="text-2xl font-semibold text-slate-50 sm:text-3xl">FAQ</h2>
-        <div className="mt-6 grid gap-4">
+      <section className="mt-16">
+        <h3 className="text-3xl font-bold text-slate-100">FAQ</h3>
+        <div className="mt-6 space-y-4">
           {faqs.map((faq) => (
-            <article key={faq.question} className="rounded-2xl border border-slate-800 bg-slate-900/70 p-5">
-              <h3 className="text-base font-semibold text-slate-100">{faq.question}</h3>
-              <p className="mt-2 text-sm text-slate-300">{faq.answer}</p>
+            <article key={faq.question} className="rounded-2xl border border-white/10 bg-[#101721] p-5">
+              <h4 className="text-base font-semibold text-slate-100">{faq.question}</h4>
+              <p className="mt-2 text-sm leading-6 text-slate-300">{faq.answer}</p>
             </article>
           ))}
         </div>

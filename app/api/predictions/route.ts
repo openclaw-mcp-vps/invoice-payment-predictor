@@ -1,17 +1,29 @@
 import { NextRequest, NextResponse } from "next/server";
-import { listInvoices } from "@/lib/db";
-import { getAccessEmailFromCookieHeader } from "@/lib/paywall";
-import { generatePredictions } from "@/lib/prediction-engine";
 
-export const dynamic = "force-dynamic";
+import { getAccessUserFromRequest } from "@/lib/access";
+import { listInvoices } from "@/lib/database";
+import { buildTimeline, generatePredictions, summarizePredictions } from "@/lib/prediction-engine";
 
 export async function GET(request: NextRequest) {
-  const email = getAccessEmailFromCookieHeader(request.headers.get("cookie"));
-  if (!email) {
+  const user = getAccessUserFromRequest(request);
+  if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const invoices = await listInvoices();
-  const data = generatePredictions(invoices);
-  return NextResponse.json(data);
+  try {
+    const invoices = await listInvoices(user.email);
+    const predictions = generatePredictions(invoices);
+    const summary = summarizePredictions(invoices, predictions);
+    const timeline = buildTimeline(invoices);
+
+    return NextResponse.json({
+      generatedAt: new Date().toISOString(),
+      summary,
+      predictions,
+      timeline
+    });
+  } catch (error) {
+    console.error("Failed to build predictions", error);
+    return NextResponse.json({ error: "Failed to generate predictions" }, { status: 500 });
+  }
 }

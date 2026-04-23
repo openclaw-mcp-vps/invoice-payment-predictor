@@ -1,20 +1,86 @@
-import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
-import { ACCESS_COOKIE_NAME, verifyAccessToken } from "@/lib/paywall";
+import crypto from "node:crypto";
 
-export async function getAccessEmailFromCookie() {
-  const store = await cookies();
-  const cookie = store.get(ACCESS_COOKIE_NAME)?.value;
-  const payload = verifyAccessToken(cookie);
-  return payload?.email || null;
+import { cookies } from "next/headers";
+import { NextRequest } from "next/server";
+
+export const ACCESS_COOKIE_NAME = "ipp_access";
+
+export interface AccessUser {
+  email: string;
+  exp: number;
 }
 
-export async function requirePaidAccess() {
-  const email = await getAccessEmailFromCookie();
+function getSigningSecret() {
+  return process.env.STRIPE_WEBHOOK_SECRET || "dev-invoice-payment-predictor-secret";
+}
 
-  if (!email) {
-    redirect("/unlock");
+function encode(input: string) {
+  return Buffer.from(input, "utf8").toString("base64url");
+}
+
+function decode(input: string) {
+  return Buffer.from(input, "base64url").toString("utf8");
+}
+
+function sign(payload: string) {
+  return crypto.createHmac("sha256", getSigningSecret()).update(payload).digest("base64url");
+}
+
+export function createAccessToken(email: string, ttlDays = 45) {
+  const normalizedEmail = email.trim().toLowerCase();
+  const body = encode(
+    JSON.stringify({
+      email: normalizedEmail,
+      exp: Date.now() + ttlDays * 24 * 60 * 60 * 1000
+    })
+  );
+  return `${body}.${sign(body)}`;
+}
+
+export function verifyAccessToken(token: string | undefined | null): AccessUser | null {
+  if (!token) {
+    return null;
   }
 
-  return email;
+  const [encodedBody, providedSignature] = token.split(".");
+  if (!encodedBody || !providedSignature) {
+    return null;
+  }
+
+  const expectedSignature = sign(encodedBody);
+  const providedBuffer = Buffer.from(providedSignature);
+  const expectedBuffer = Buffer.from(expectedSignature);
+
+  if (providedBuffer.length !== expectedBuffer.length) {
+    return null;
+  }
+
+  if (!crypto.timingSafeEqual(providedBuffer, expectedBuffer)) {
+    return null;
+  }
+
+  try {
+    const parsed = JSON.parse(decode(encodedBody)) as AccessUser;
+    if (!parsed.email || typeof parsed.exp !== "number") {
+      return null;
+    }
+
+    if (Date.now() > parsed.exp) {
+      return null;
+    }
+
+    return { email: parsed.email.toLowerCase(), exp: parsed.exp };
+  } catch {
+    return null;
+  }
+}
+
+export async function getAccessUserFromCookies() {
+  const cookieStore = await cookies();
+  const token = cookieStore.get(ACCESS_COOKIE_NAME)?.value;
+  return verifyAccessToken(token);
+}
+
+export function getAccessUserFromRequest(request: NextRequest) {
+  return verifyAccessToken(request.cookies.get(ACCESS_COOKIE_NAME)?.value);
 }

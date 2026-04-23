@@ -1,11 +1,33 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
-export function POST() {
-  return NextResponse.json(
-    {
-      error:
-        "Lemon Squeezy webhook is not used in this build. Configure Stripe webhook at /api/webhooks/stripe instead."
-    },
-    { status: 410 }
-  );
+import { upsertAccessEvent } from "@/lib/database";
+import { parseLemonWebhook, verifyLemonSignature } from "@/lib/lemon-squeezy";
+
+export async function POST(request: NextRequest) {
+  const rawBody = await request.text();
+  const signature = request.headers.get("x-signature");
+
+  if (!verifyLemonSignature(rawBody, signature)) {
+    return NextResponse.json({ error: "Invalid Lemon Squeezy signature" }, { status: 400 });
+  }
+
+  try {
+    const parsed = parseLemonWebhook(rawBody);
+
+    await upsertAccessEvent({
+      provider: "lemon_squeezy",
+      eventKey: parsed.eventKey,
+      customerEmail: parsed.customerEmail,
+      paid: parsed.paid,
+      metadata: {
+        lemonEventName: parsed.eventName,
+        payload: parsed.payload
+      }
+    });
+
+    return NextResponse.json({ received: true, event: parsed.eventName });
+  } catch (error) {
+    console.error("Failed to parse Lemon Squeezy webhook", error);
+    return NextResponse.json({ error: "Invalid webhook payload" }, { status: 400 });
+  }
 }

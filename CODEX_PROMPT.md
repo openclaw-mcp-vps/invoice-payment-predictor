@@ -11,27 +11,28 @@ NICHE: invoice-billing
 PRICE: $$12/mo
 
 ARCHITECTURE SPEC:
-A Next.js web app that ingests invoice data via CSV upload or manual entry, uses machine learning algorithms to analyze payment patterns and predict late payments, then displays risk scores and recommended actions in a dashboard. Built with TypeScript, Prisma for data persistence, and integrates with Lemon Squeezy for subscription billing.
+A Next.js web app with PostgreSQL database that ingests invoice data, analyzes payment patterns using simple ML algorithms, and provides predictive insights via dashboard. Uses Lemon Squeezy for subscription billing and integrates with popular invoicing tools via APIs.
 
 PLANNED FILES:
 - app/page.tsx
 - app/dashboard/page.tsx
-- app/invoices/page.tsx
-- app/predictions/page.tsx
+- app/dashboard/invoices/page.tsx
+- app/dashboard/predictions/page.tsx
+- app/dashboard/integrations/page.tsx
 - app/api/invoices/route.ts
 - app/api/predictions/route.ts
-- app/api/upload/route.ts
 - app/api/webhooks/lemon-squeezy/route.ts
-- components/InvoiceUpload.tsx
-- components/PredictionDashboard.tsx
-- components/RiskScore.tsx
-- components/PaymentChart.tsx
+- app/api/integrations/quickbooks/route.ts
+- app/api/integrations/freshbooks/route.ts
+- lib/database.ts
 - lib/prediction-engine.ts
 - lib/lemon-squeezy.ts
-- lib/db.ts
-- prisma/schema.prisma
+- components/invoice-table.tsx
+- components/prediction-card.tsx
+- components/risk-score.tsx
+- components/payment-timeline.tsx
 
-DEPENDENCIES: next, react, typescript, tailwindcss, prisma, @prisma/client, postgres, @lemonsqueezy/lemonsqueezy.js, recharts, csv-parser, date-fns, zod, next-auth, lucide-react, @radix-ui/react-dialog, @radix-ui/react-select
+DEPENDENCIES: next, react, tailwindcss, @tailwindcss/forms, prisma, @prisma/client, postgresql, recharts, date-fns, zod, next-auth, @lemonsqueezy/lemonsqueezy.js, ml-regression, csv-parser, lucide-react
 
 REQUIREMENTS:
 - Next.js 15 with App Router (app/ directory)
